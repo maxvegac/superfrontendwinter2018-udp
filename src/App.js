@@ -1,14 +1,14 @@
 import React, {Component} from 'react';
 import './App.css';
-
+import {Curso} from './Curso';
 
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            name: 'Max',
-            showLogo: false,
-            loading: true
+            loading: true,
+            listarCursoPressed: false,
+            cursos: []
         };
     }
 
@@ -32,14 +32,25 @@ class App extends Component {
             })
     }
 
-    listarCurso(curso) {
-        this.setState({
-            listarCursoPressed: true
-        });
+    listarCursos() {
+        fetch('http://localhost:5555/class/')
+            .then(response => response.json())
+            .then(responseJSON => {
+                console.log('Respuesta backend', responseJSON);
+                this.setState({
+                    listarCursoPressed: true,
+                    cursos: responseJSON.data
+                });
+            })
+            .catch(error => {
+                console.log(':(', error);
+            })
+        //
+
     }
 
     render() {
-        const {name, showLogo, loading, listarCursoPressed} = this.state;
+        const {loading, listarCursoPressed, cursos} = this.state;
         return (
             <div className="App">
                 <header className="App-header">
@@ -49,21 +60,33 @@ class App extends Component {
                     <div className="App-menu">
                         <span className="App-menu-item">
                             <a href="#" style={{
-                                color:'#fff'
-                            }} onClick={() => this.listarCurso('CIT3323')}>Listar Cursos</a></span>
+                                color: '#fff'
+                            }} onClick={() => this.listarCursos()}>Listar Cursos</a></span>
                         <span className="App-menu-item">Detalle Curso</span>
                     </div>
                 </header>
 
-                <p className="App-intro">
+                <div className="App-intro">
                     {
                         !loading && listarCursoPressed
                             ?
-                            <div><span>Presionar curso fue cliqueado</span></div>
+                            <div>
+                                {
+                                    cursos.map((curso, ix) =>
+                                        <Curso name={curso.name}
+                                               year={curso.year}
+                                               code={curso.code}
+                                               section={curso.section}
+                                               semester={curso.semester}
+                                               key={ix}
+                                        />
+                                    )
+                                }
+                            </div>
                             :
                             <div><span>CLICK IT!</span></div>
                     }
-                </p>
+                </div>
             </div>
         );
     }
